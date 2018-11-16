@@ -1,46 +1,36 @@
 package com.example.multidatasources;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.sql.DataSource;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 
 @SpringBootApplication
 public class MultiDatasourcesApplication {
+
+  private List<String> configs = List.of("source1", "source2");
 
   public static void main(String[] args) {
     SpringApplication.run(MultiDatasourcesApplication.class, args);
   }
 
   @Bean
-  @Primary
   DataSource customDatasources() {
+    Map<Object, Object> dataSources = new HashMap<>();
+    for (String config : configs) {
+      dataSources.put(config, DataSourceBuilder.create()
+          .url("jdbc:mysql://localhost:3306/" + config)
+          .username("root")
+          .password("root")
+          .build());
+    }
     RoutingDataSource routingDataSource = new RoutingDataSource();
-    HashMap<Object, Object> map = new HashMap<>();
-    map.put("dataSourceClient1", dataSourceClient1());
-    map.put("dataSourceClient2", dataSourceClient2());
-    routingDataSource.setTargetDataSources(map);
+    routingDataSource.setTargetDataSources(dataSources);
 
     return routingDataSource;
-  }
-
-
-  DataSource dataSourceClient1() {
-    return DataSourceBuilder.create()
-        .url("jdbc:mysql://localhost:3306/source1")
-        .username("root")
-        .password("root")
-        .build();
-  }
-
-  DataSource dataSourceClient2() {
-    return DataSourceBuilder.create()
-        .url("jdbc:mysql://localhost:3306/source2")
-        .username("root")
-        .password("root")
-        .build();
   }
 }

@@ -6,7 +6,7 @@ public class ClientDataSourceSwitcher {
 
   public static String getClientName() {
     if (contextHolder.get() == null) {
-      return "dataSourceClient1";
+      return "source1";
     }
     return contextHolder.get();
   }
